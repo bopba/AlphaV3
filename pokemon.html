@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokédex Interativa</title> 
+    <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+    <h1>Busca Pokémon</h1>
+    <div class="meio">
+    <input type="text" id="entrada" placeholder="Digite o nome ou ID do Pokemon" onblur="buscarPokemon()">
+    <button class="botao">Pesquisar</button>
+    </div>
+    <div id="resultado"></div>
+    <script>
+        async function buscarPokemon() {
+            const resultado = document.getElementById('resultado');
+            const termo = document.getElementById('entrada').value.trim().toLowerCase();
+    
+            if (!termo) {
+                resultado.innerHTML = `<p class="erro" style="color:red">Por favor, digite um nome ou ID válido.</p>`;
+                return;
+            }
+    
+            try {
+                const resposta = await fetch(`https://pokeapi.co/api/v2/pokemon/${termo}`);
+                if (!resposta.ok) throw new Error("Pokémon não encontrado.");
+    
+                const { name, id, types, abilities, sprites, height, weight } = await resposta.json();
+    
+                resultado.innerHTML = `
+                    <div class="pokemon-card">
+                        <img src="${sprites.other['official-artwork'].front_default || sprites.front_default}" alt="${name}">
+                        <h2>${name.toUpperCase()} (#${id})</h2>
+                        <p><strong>Tipo:</strong> ${types.map(t => t.type.name).join(', ')}</p>
+                        <p><strong>Habilidades:</strong> ${abilities.map(a => a.ability.name).join(', ')}</p>
+                        <p><strong>Altura:</strong> ${(height / 10).toFixed(1)} m</p>
+                        <p><strong>Peso:</strong> ${(weight / 10).toFixed(1)} kg</p>
+                    </div>
+                `;
+            } catch (erro) {
+                resultado.innerHTML = `<p class="erro" style="color:red">${erro.message}</p>`;
+            }
+        }
+    
+        document.querySelector('.botao').addEventListener('click', buscarPokemon);
+    </script>
+</html>
